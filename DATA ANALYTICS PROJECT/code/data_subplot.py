@@ -12,9 +12,9 @@ def normalize(sig):
 
 def data_subplot(raw_data, movement, breathing, dc, t1, t2):
     raw_data = normalize(raw_data)
-    movement = normalize(movement)
+    # movement = normalize(movement)
     breathing = normalize(breathing)
-    dc = normalize(dc)
+    # dc = normalize(dc)
     steps = np.arange(t1, t2) / 50
 
     fig = plt.figure()
@@ -41,4 +41,4 @@ def data_subplot(raw_data, movement, breathing, dc, t1, t2):
     ax3.legend(bbox_to_anchor=(1, 1.3), loc='center right')
     plt.subplots_adjust(hspace=0.8)
     
-    plt.savefig('results/vitals.png')
+    plt.savefig('DATA ANALYTICS PROJECT/results/vitals.png')

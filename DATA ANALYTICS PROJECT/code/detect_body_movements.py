@@ -93,7 +93,7 @@ def detect_patterns(pt1, pt2, win_size, data, time, plot):
         pt1 = pt2
         pt2 += win_size
 
-    plt.savefig('results/rawData.png')
+    plt.savefig('DATA ANALYTICS PROJECT/results/rawData.png')
 
     # Remove Body Movements and bed-empty activities
     ind2remove = np.sort(np.append(np.where(event_flags == 3), np.where(event_flags == 2)), axis=None)
