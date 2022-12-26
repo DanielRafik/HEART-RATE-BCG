@@ -17,5 +17,5 @@ def vitals(t1, t2, win_size, window_limit, sig):
         all_rate.append(rate)
         t1 = t2
         t2 += win_size
-        all_rate = np.vstack(all_rate).flatten()
-        return all_rate
+    all_rate = np.vstack(all_rate).flatten()
+    return all_rate
