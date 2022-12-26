@@ -14,7 +14,7 @@ from detect_body_movements import detect_patterns
 from detect_peaks import detect_peaks
 from modwt_matlab_fft import modwt
 from modwt_mra_matlab_fft import modwtmra
-from sklearn.metrics import mean_absolute_percentage_error,mean_squared_error
+from sklearn.metrics import mean_absolute_percentage_error,mean_squared_error,mean_absolute_error
 from remove_nonLinear_trend import remove_nonLinear_trend
 from data_subplot import data_subplot
 from heartpy import process
@@ -105,7 +105,7 @@ def calculate_ECG_and_BCG_Heart_Rate(file):
             return ECG_Heart_Rate,np.around(np.mean(beats))
             
             
-# ================================================== Patient 1 ===================================================================
+# ================================================== Patients Heart Rates ===================================================================
 ECG_Heart_rates=[]
 BCG_Heart_rates=[]
 
@@ -118,19 +118,30 @@ for i in range(0,len(files)):
     BCG_Heart_rates.append(bcg)
 
 
+
+#==================================================== ERRORS ==============================================================
 n = len(ECG_Heart_rates)
 sum = 0
-  
 for i in range(n):
     sum += abs(ECG_Heart_rates[i] - BCG_Heart_rates[i])
-  
 Mean_Absolute_error = sum/n
+
+
+
+Mean_Squared_Error = np.square(np.subtract(ECG_Heart_rates,BCG_Heart_rates)).mean()
+
+
+
+sum=0
+for i in range(n):
+    sum+=abs(ECG_Heart_rates[i] - BCG_Heart_rates[i])/ECG_Heart_rates[i]
+Mean_Absolute_Percentage_Error=sum/n
 print("====================================================================================")
 print("==================================== ERRORS ========================================") 
 print("====================================================================================")
 print("\t\tMean absolute error : " + str(Mean_Absolute_error))
-print("\t\tMean absolute persentage error : ", mean_absolute_percentage_error(ECG_Heart_rates,BCG_Heart_rates))
-print("\t\tMean squared error : ", mean_squared_error(ECG_Heart_rates,BCG_Heart_rates))
+print("\t\tMean absolute persentage error : ", Mean_Absolute_Percentage_Error)
+print("\t\tMean squared error : ", Mean_Squared_Error)
 
 print('\nEnd processing ...')     
         # print(Heart_rate_BCG)
