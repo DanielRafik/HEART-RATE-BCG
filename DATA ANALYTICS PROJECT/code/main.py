@@ -8,7 +8,7 @@ from scipy.signal import savgol_filter,resample
 import pyfftw
 import matplotlib.pyplot as plt
 from band_pass_filtering import band_pass_filtering
-from compute_vitals import vitals
+from compute_vitals import vitals,vitals_ECG
 from detect_apnea_events import apnea_events
 from detect_body_movements import detect_patterns
 from detect_peaks import detect_peaks
@@ -74,74 +74,71 @@ def calculate_ECG_and_BCG_Heart_Rate(file):
             
             all_data=pd.read_csv(fileName,sep=",",header=None,skiprows=1).values
 
-            data_BCG=all_data[:,10]
+            data_BCG=all_data[:,5]
             data_ECG=all_data[:,2]
 
             resampling_ratio = int(50/1000*len(data_BCG))
             resampled_BCG = resample(data_BCG,resampling_ratio)
             resampled_ECG = resample(data_ECG,resampling_ratio)
             
-            wd, m = process(resampled_ECG.flatten(), 50)
-            ECG_Heart_Rate=np.around(m["bpm"])
-
-            print("\t---------------------------------------------")
-            print("\t============ ECG HEART RATE ===============")
-            print("\t\tHeart Rate : ",ECG_Heart_Rate)
-            
-            w = modwt(resampled_BCG, 'bior3.9', 4)
-            dc = modwtmra(w, 'bior3.9')
-            wavelet_cycle = dc[4]
-
+        
             t1, t2,  window_shift = 0, 500, 500
-            
-            
-            limit = int(math.floor(resampled_BCG.size / window_shift))
-            beats = vitals(t1, t2, window_shift, limit,   wavelet_cycle)
-           
-            print("\t---------------------------------------------")
-            print("\t============ BCG HEART RATE ===============")
-            print('\t\tHeart Rate : ', np.around(np.mean(beats)))
-            print("\t---------------------------------------------")
-            return ECG_Heart_Rate,np.around(np.mean(beats))
+            w_ECG = modwt(resampled_ECG, 'bior3.9', 5)
+            dc_ECG = modwtmra(w_ECG, 'bior3.9')
+            wavelet_cycle_ECG = dc_ECG[5]
+            limit_ECG = int(math.floor(resampled_ECG.size / window_shift))
+            ECG_Heart_Rates=np.around(vitals_ECG(t1,t2,window_shift,limit_ECG,wavelet_cycle_ECG))
+            print("\t\t\t---------------------------------------------")
+            print("\t\t\t============ ECG HEART RATE ===============")
+            print("\t\t\t\tHeart Rate : ",ECG_Heart_Rates)
+
+
+
+            w_BCG = modwt(resampled_BCG, 'bior3.9', 4)
+            dc_BCG = modwtmra(w_BCG, 'bior3.9')
+            wavelet_cycle_BCG = dc_BCG[4]
+            t1, t2,  window_shift = 0, 500, 500
+            limit_BCG = int(math.floor(resampled_BCG.size / window_shift))
+            beats_BCG = np.around(vitals(t1, t2, window_shift, limit_BCG,   wavelet_cycle_BCG))
+            print("\t\t\t---------------------------------------------")
+            print("\t\t\t============ BCG HEART RATE ===============")
+            print('\t\t\t\tHeart Rate : ', beats_BCG)
+            print("\t\t\t---------------------------------------------")
+
+
+            return ECG_Heart_Rates,beats_BCG
             
             
 # ================================================== Patients Heart Rates ===================================================================
-ECG_Heart_rates=[]
-BCG_Heart_rates=[]
+
+def calculate_errors(ecg,bcg):
+    n = len(ecg)
+    sum = 0
+    for i in range(n):
+        sum += abs(ecg[i] - bcg[i])
+    Mean_Absolute_error = sum/n
+
+    Mean_Squared_Error = np.square(np.subtract(ecg,bcg)).mean()
+
+    sum=0
+    for i in range(n):
+        sum+=abs(ecg[i] - bcg[i])/ecg[i]
+    Mean_Absolute_Percentage_Error=sum/n
+
+    return Mean_Absolute_error,Mean_Squared_Error,Mean_Absolute_Percentage_Error
+
 
 for i in range(0,len(files)):
-    print("\n=================================================================")
-    print("===================== Patient",i+1, "=================================") 
-    print("=================================================================")
+    print("\n\t\t=================================================================")
+    print("\t\t===================== Patient",i+1, "=================================") 
+    print("\t\t=================================================================")
     ecg,bcg=calculate_ECG_and_BCG_Heart_Rate(files[i])
-    ECG_Heart_rates.append(ecg)
-    BCG_Heart_rates.append(bcg)
+    Mean_Absolute_Error,Mean_Squared_Error,Mean_Absolute_Percentage_Error=calculate_errors(ecg,bcg)
+    print("\t\tMean absolute error : " + str(Mean_Absolute_Error))
+    print("\t\tMean absolute persentage error : ", Mean_Absolute_Percentage_Error)
+    print("\t\tMean squared error : ", Mean_Squared_Error)
 
-
-
-#==================================================== ERRORS ==============================================================
-n = len(ECG_Heart_rates)
-sum = 0
-for i in range(n):
-    sum += abs(ECG_Heart_rates[i] - BCG_Heart_rates[i])
-Mean_Absolute_error = sum/n
-
-
-
-Mean_Squared_Error = np.square(np.subtract(ECG_Heart_rates,BCG_Heart_rates)).mean()
-
-
-
-sum=0
-for i in range(n):
-    sum+=abs(ECG_Heart_rates[i] - BCG_Heart_rates[i])/ECG_Heart_rates[i]
-Mean_Absolute_Percentage_Error=sum/n
-print("====================================================================================")
-print("==================================== ERRORS ========================================") 
-print("====================================================================================")
-print("\t\tMean absolute error : " + str(Mean_Absolute_error))
-print("\t\tMean absolute persentage error : ", Mean_Absolute_Percentage_Error)
-print("\t\tMean squared error : ", Mean_Squared_Error)
+    
 
 print('\nEnd processing ...')     
         # print(Heart_rate_BCG)
