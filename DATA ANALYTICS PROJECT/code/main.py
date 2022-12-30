@@ -173,7 +173,7 @@ all_data=[ecg1,bcg1]
 fig=plt.figure()
 plt.title("Box Plot of ECG heart rates and BCG heart rates of patient no:1")
 plt.boxplot(all_data)
-plt.savefig("DATA ANALYTICS PROJECT/results/box_Plot_patient_1.png")
+plt.savefig("DATA ANALYTICS PROJECT/results/box_Plot_patient_2.png")
 
 
 #===================================== Bland-Altman Plot ======================================================
@@ -189,7 +189,7 @@ df=pd.DataFrame({'ECG':ecg,
                 'BCG':bcg})
 sm.graphics.mean_diff_plot(df["ECG"],df["BCG"])
 plt.title("Bland-Altman Plot of ECG heart rates and BCG heart rates of patient no:1")
-plt.savefig("DATA ANALYTICS PROJECT/results/Bland-Altman_Patient_1.png")
+plt.savefig("DATA ANALYTICS PROJECT/results/Bland-Altman_Patient_2.png")
 
 #========================================================= Pearson Correlation Plot ==================================
 fig3=plt.figure()
@@ -206,7 +206,7 @@ var2 = pd.Series (bcg1)
 plt.title ('Correlation between ECG and BCG')  
 plt.scatter (var1, var2)  
 plt.plot(np. unique (var1), np.poly1d (np.polyfit(var1, var2, 1))(np.unique (var1)), color = 'green')
-plt.savefig("DATA ANALYTICS PROJECT/results/Pearson_Correlation_patient_1.png")
+plt.savefig("DATA ANALYTICS PROJECT/results/Pearson_Correlation_patient_2.png")
 
 
 print('\nEnd processing ...')     
