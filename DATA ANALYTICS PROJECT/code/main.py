@@ -18,7 +18,11 @@ from sklearn.metrics import mean_absolute_percentage_error,mean_squared_error,me
 from remove_nonLinear_trend import remove_nonLinear_trend
 from data_subplot import data_subplot
 from heartpy import process
+from sklearn.metrics import mean_absolute_error,mean_absolute_percentage_error,mean_squared_error
 import neurokit2 as nk
+import statsmodels.api as sm
+
+
 # ======================================================================================================================
 
 # Main program starts here
@@ -65,8 +69,7 @@ files=['DATA ANALYTICS PROJECT\data\X1001.csv',
 'DATA ANALYTICS PROJECT\data\X0132.csv']
  
 
-
-
+#================================================================== ECG & BCG heart rate Calculations ##################################################
 def calculate_ECG_and_BCG_Heart_Rate(file):
     if file.endswith(".csv"):
         fileName = os.path.join(file)
@@ -81,11 +84,11 @@ def calculate_ECG_and_BCG_Heart_Rate(file):
             resampled_BCG = resample(data_BCG,resampling_ratio)
             resampled_ECG = resample(data_ECG,resampling_ratio)
             
-        
-            t1, t2,  window_shift = 0, 500, 500
-            w_ECG = modwt(resampled_ECG, 'bior3.9', 5)
+          
+            t1, t2,  window_shift = 0, 600, 600
+            w_ECG = modwt(resampled_ECG, 'bior3.9',4)
             dc_ECG = modwtmra(w_ECG, 'bior3.9')
-            wavelet_cycle_ECG = dc_ECG[5]
+            wavelet_cycle_ECG = dc_ECG[4]
             limit_ECG = int(math.floor(resampled_ECG.size / window_shift))
             ECG_Heart_Rates=np.around(vitals_ECG(t1,t2,window_shift,limit_ECG,wavelet_cycle_ECG))
             print("\t\t\t---------------------------------------------")
@@ -97,7 +100,8 @@ def calculate_ECG_and_BCG_Heart_Rate(file):
             w_BCG = modwt(resampled_BCG, 'bior3.9', 4)
             dc_BCG = modwtmra(w_BCG, 'bior3.9')
             wavelet_cycle_BCG = dc_BCG[4]
-            t1, t2,  window_shift = 0, 500, 500
+            window_shift=int(len(resampled_ECG)/50)
+            t1, t2,  window_shift = 0, 600, 600
             limit_BCG = int(math.floor(resampled_BCG.size / window_shift))
             beats_BCG = np.around(vitals(t1, t2, window_shift, limit_BCG,   wavelet_cycle_BCG))
             print("\t\t\t---------------------------------------------")
@@ -109,7 +113,7 @@ def calculate_ECG_and_BCG_Heart_Rate(file):
             return ECG_Heart_Rates,beats_BCG
             
             
-# ================================================== Patients Heart Rates ===================================================================
+# ================================================== Calculate Errors ===================================================================
 
 def calculate_errors(ecg,bcg):
     n = len(ecg)
@@ -134,11 +138,36 @@ for i in range(0,len(files)):
     print("\t\t=================================================================")
     ecg,bcg=calculate_ECG_and_BCG_Heart_Rate(files[i])
     Mean_Absolute_Error,Mean_Squared_Error,Mean_Absolute_Percentage_Error=calculate_errors(ecg,bcg)
+    if i ==0:
+        ecg1,bcg1=ecg,bcg
     print("\t\tMean absolute error : " + str(Mean_Absolute_Error))
     print("\t\tMean absolute persentage error : ", Mean_Absolute_Percentage_Error)
     print("\t\tMean squared error : ", Mean_Squared_Error)
 
-    
+#==================================== Box Plot ==================================================================
+all_data=[ecg,bcg]
+fig=plt.figure(figsize=(10,7))
+plt.title("Box Plot of ECG heart rates and BCG heart rates of patient no:40")
+plt.boxplot(all_data)
+plt.savefig("DATA ANALYTICS PROJECT/results/box_Plot.png")
+
+
+#===================================== Bland-Altman Plot ======================================================
+df=pd.DataFrame({'ECG':ecg,
+                'BCG':bcg})
+f,ax=plt.subplots(1)
+sm.graphics.mean_diff_plot(df.ECG,df.BCG,ax=ax)
+plt.title("Bland-Altman Plot of ECG heart rates and BCG heart rates of patient no:40")
+plt.savefig("DATA ANALYTICS PROJECT/results/Bland-Altman.png")
+
+#========================================================= Pearson Correlation Plot ==================================
+var1 = pd.Series (ecg)  
+var2 = pd.Series (bcg)  
+plt.title ('Correlation between ECG and BCG')  
+plt.scatter (var1, var2)  
+plt.plot(np. unique (var1), np.poly1d (np.polyfit(var1, var2, 1))(np.unique (var1)), color = 'green')
+plt.savefig("DATA ANALYTICS PROJECT/results/Pearson_Correlation.png")
+
 
 print('\nEnd processing ...')     
         # print(Heart_rate_BCG)
