@@ -89,7 +89,7 @@ def calculate_ECG_and_BCG_Heart_Rate(file):
             resampled_ECG = resample(data_ECG,resampling_ratio)
             
           
-            t1, t2,  window_shift = 0, 600, 600
+            t1, t2,  window_shift = 0, 500, 500
             w_ECG = modwt(resampled_ECG, 'bior3.9',4)
             dc_ECG = modwtmra(w_ECG, 'bior3.9')
             wavelet_cycle_ECG = dc_ECG[4]
@@ -105,7 +105,7 @@ def calculate_ECG_and_BCG_Heart_Rate(file):
             dc_BCG = modwtmra(w_BCG, 'bior3.9')
             wavelet_cycle_BCG = dc_BCG[4]
             window_shift=int(len(resampled_ECG)/50)
-            t1, t2,  window_shift = 0, 600, 600
+            t1, t2,  window_shift = 0, 500, 500
             limit_BCG = int(math.floor(resampled_BCG.size / window_shift))
             beats_BCG = np.around(vitals(t1, t2, window_shift, limit_BCG,   wavelet_cycle_BCG))
             print("\t\t\t---------------------------------------------")
