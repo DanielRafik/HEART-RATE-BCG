@@ -198,7 +198,7 @@ var2 = pd.Series (bcg)
 plt.title ('Correlation between ECG and BCG')  
 plt.scatter (var1, var2)  
 plt.plot(np. unique (var1), np.poly1d (np.polyfit(var1, var2, 1))(np.unique (var1)), color = 'green')
-plt.savefig("DATA ANALYTICS PROJECT/results/Pearson_Correlation_patient.png")
+plt.savefig("DATA ANALYTICS PROJECT/results/Pearson_Correlation_patient_40.png")
 
 fig3=plt.figure()
 var1 = pd.Series (ecg1)  
@@ -206,7 +206,7 @@ var2 = pd.Series (bcg1)
 plt.title ('Correlation between ECG and BCG')  
 plt.scatter (var1, var2)  
 plt.plot(np. unique (var1), np.poly1d (np.polyfit(var1, var2, 1))(np.unique (var1)), color = 'green')
-plt.savefig("DATA ANALYTICS PROJECT/results/Pearson_Correlation_patient.png")
+plt.savefig("DATA ANALYTICS PROJECT/results/Pearson_Correlation_patient_1.png")
 
 
 print('\nEnd processing ...')     
