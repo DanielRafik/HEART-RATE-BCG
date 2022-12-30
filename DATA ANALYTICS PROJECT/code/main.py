@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from scipy.signal import savgol_filter,resample
 import pyfftw
+
 import matplotlib.pyplot as plt
 from band_pass_filtering import band_pass_filtering
 from compute_vitals import vitals,vitals_ECG
@@ -14,6 +15,7 @@ from detect_body_movements import detect_patterns
 from detect_peaks import detect_peaks
 from modwt_matlab_fft import modwt
 from modwt_mra_matlab_fft import modwtmra
+import csv
 from sklearn.metrics import mean_absolute_percentage_error,mean_squared_error,mean_absolute_error
 from remove_nonLinear_trend import remove_nonLinear_trend
 from data_subplot import data_subplot
@@ -21,6 +23,8 @@ from heartpy import process
 from sklearn.metrics import mean_absolute_error,mean_absolute_percentage_error,mean_squared_error
 import neurokit2 as nk
 import statsmodels.api as sm
+import warnings
+warnings.filterwarnings('ignore') # setting ignore as a parameter
 
 
 # ======================================================================================================================
@@ -132,41 +136,77 @@ def calculate_errors(ecg,bcg):
     return Mean_Absolute_error,Mean_Squared_Error,Mean_Absolute_Percentage_Error
 
 
+
+file = open('Errors.csv', 'w')
+writer = csv.writer(file)
+data = ["patient number", "Mean Absolute error", "Mean Squared Error", "Mean Absolute Percentage Error"]
+writer.writerow(data)
 for i in range(0,len(files)):
     print("\n\t\t=================================================================")
     print("\t\t===================== Patient",i+1, "=================================") 
     print("\t\t=================================================================")
     ecg,bcg=calculate_ECG_and_BCG_Heart_Rate(files[i])
     Mean_Absolute_Error,Mean_Squared_Error,Mean_Absolute_Percentage_Error=calculate_errors(ecg,bcg)
+
+#----------------------------------- Save Errors in csv file --------------------------------------------------------------
+    data = [str(i+1), str(Mean_Absolute_Error), str(Mean_Squared_Error), str(Mean_Absolute_Percentage_Error*100)] 
+    writer.writerow(data)
+
     if i ==0:
         ecg1,bcg1=ecg,bcg
     print("\t\tMean absolute error : " + str(Mean_Absolute_Error))
-    print("\t\tMean absolute persentage error : ", Mean_Absolute_Percentage_Error)
+    print("\t\tMean absolute persentage error : ", Mean_Absolute_Percentage_Error*100,"%")
     print("\t\tMean squared error : ", Mean_Squared_Error)
+
+
+file.close()
+
 
 #==================================== Box Plot ==================================================================
 all_data=[ecg,bcg]
-fig=plt.figure(figsize=(10,7))
+fig=plt.figure()
 plt.title("Box Plot of ECG heart rates and BCG heart rates of patient no:40")
 plt.boxplot(all_data)
-plt.savefig("DATA ANALYTICS PROJECT/results/box_Plot.png")
+plt.savefig("DATA ANALYTICS PROJECT/results/box_Plot_patient_40.png")
+
+all_data=[ecg1,bcg1]
+fig=plt.figure()
+plt.title("Box Plot of ECG heart rates and BCG heart rates of patient no:1")
+plt.boxplot(all_data)
+plt.savefig("DATA ANALYTICS PROJECT/results/box_Plot_patient_1.png")
 
 
 #===================================== Bland-Altman Plot ======================================================
+fig2=plt.figure()
 df=pd.DataFrame({'ECG':ecg,
                 'BCG':bcg})
-f,ax=plt.subplots(1)
-sm.graphics.mean_diff_plot(df.ECG,df.BCG,ax=ax)
+sm.graphics.mean_diff_plot(df["ECG"],df["BCG"])
 plt.title("Bland-Altman Plot of ECG heart rates and BCG heart rates of patient no:40")
-plt.savefig("DATA ANALYTICS PROJECT/results/Bland-Altman.png")
+plt.savefig("DATA ANALYTICS PROJECT/results/Bland-Altman_Patient_40.png")
+
+fig2=plt.figure()
+df=pd.DataFrame({'ECG':ecg,
+                'BCG':bcg})
+sm.graphics.mean_diff_plot(df["ECG"],df["BCG"])
+plt.title("Bland-Altman Plot of ECG heart rates and BCG heart rates of patient no:1")
+plt.savefig("DATA ANALYTICS PROJECT/results/Bland-Altman_Patient_1.png")
 
 #========================================================= Pearson Correlation Plot ==================================
+fig3=plt.figure()
 var1 = pd.Series (ecg)  
 var2 = pd.Series (bcg)  
 plt.title ('Correlation between ECG and BCG')  
 plt.scatter (var1, var2)  
 plt.plot(np. unique (var1), np.poly1d (np.polyfit(var1, var2, 1))(np.unique (var1)), color = 'green')
-plt.savefig("DATA ANALYTICS PROJECT/results/Pearson_Correlation.png")
+plt.savefig("DATA ANALYTICS PROJECT/results/Pearson_Correlation_patient.png")
+
+fig3=plt.figure()
+var1 = pd.Series (ecg1)  
+var2 = pd.Series (bcg1)  
+plt.title ('Correlation between ECG and BCG')  
+plt.scatter (var1, var2)  
+plt.plot(np. unique (var1), np.poly1d (np.polyfit(var1, var2, 1))(np.unique (var1)), color = 'green')
+plt.savefig("DATA ANALYTICS PROJECT/results/Pearson_Correlation_patient.png")
 
 
 print('\nEnd processing ...')     
